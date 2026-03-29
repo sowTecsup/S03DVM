@@ -14,7 +14,10 @@ public class PlayerController : MonoBehaviour
 
     public bool IsDashing;
     public float DashForce = 10f;
+    public float dashDuration = 0.2f;
+    private float dashTimer;
 
+    public float PushForce = 0.2f;
 
     [SerializeField]private float verticalVelocity;
     public Vector2 moveInput;
@@ -30,7 +33,7 @@ public class PlayerController : MonoBehaviour
         inputs.Player.Move.performed += ctx => moveInput = ctx.ReadValue<Vector2>();
         inputs.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-        inputs.Player.Sprint.performed += ctx => IsDashing = true;
+        inputs.Player.Sprint.performed += Dash;
 
         inputs.Player.Jump.performed += Jump;
     }
@@ -77,11 +80,14 @@ public class PlayerController : MonoBehaviour
 
         if (IsDashing)
         {
-            Vector3 dashDir = transform.forward;
-            moveDir = transform.forward * DashForce;
-            IsDashing = false;
+            moveDir = transform.forward * DashForce * (dashTimer / dashDuration);
+
+            dashTimer -= Time.deltaTime;
+
+            if (dashTimer <= 0f)
+                IsDashing = false;
         }
-            
+
 
 
         controller.Move(moveDir * Time.deltaTime);
@@ -92,6 +98,24 @@ public class PlayerController : MonoBehaviour
         if (!controller.isGrounded) return;
 
         verticalVelocity = jumpForce;
+    }
+
+    private void Dash(InputAction.CallbackContext context)
+    {
+        IsDashing = true;
+        dashTimer = dashDuration;
+    }
+
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        
+        Vector3 pushDir =( hit.transform.position - transform.position).normalized;
+        
+        if (hit.rigidbody != null)
+        {
+            
+            hit.rigidbody.AddForce(pushDir * PushForce, ForceMode.Impulse);
+        }
     }
 
 }
