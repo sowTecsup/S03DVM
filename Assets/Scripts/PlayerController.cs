@@ -16,7 +16,18 @@ public class PlayerController : MonoBehaviour
 
     public float pushForce = 4;
 
+    private bool IsDashing;
+    public float dashForce;
+    public float dashDuration = 0.2f;
+    private float dashTimer;
+
+
+
+
     [SerializeField]private Vector2 moveInput;
+
+
+
 
     private void Awake()
     {
@@ -33,6 +44,8 @@ public class PlayerController : MonoBehaviour
 
         inputs.Player.Jump.performed += OnJump;
 
+        inputs.Player.Sprint.performed += OnDash;
+
         
 
     }
@@ -40,8 +53,6 @@ public class PlayerController : MonoBehaviour
     {
 
     }
-
-    
     void Update()
     {
 
@@ -61,7 +72,20 @@ public class PlayerController : MonoBehaviour
 
 
         moveDir.y = verticalVelocity;
-        //print(moveDir);
+
+        if(IsDashing)
+        {
+            moveDir = transform.forward * dashForce * (dashTimer/dashDuration) ;
+
+            dashTimer -= Time.deltaTime;
+
+            if(dashTimer <= 0)
+                IsDashing = false;
+        }
+
+
+
+
         controller.Move(moveDir * Time.deltaTime);
     }
 
@@ -79,12 +103,20 @@ public class PlayerController : MonoBehaviour
     }
     private void OnControllerColliderHit(ControllerColliderHit hit)
     {
-        print(hit.gameObject.name);
+        
 
         Vector3 pushDir = (hit.transform.position - transform.position).normalized;
 
-        if (hit.rigidbody != null)
+        if (hit.rigidbody != null && hit.rigidbody.linearVelocity == Vector3.zero)
+        {
+            print(hit.gameObject.name);
             hit.rigidbody.AddForce(pushDir * pushForce, ForceMode.Impulse);
+        }
+    }
+    private void OnDash(InputAction.CallbackContext context)
+    {
+        IsDashing = true;
+        dashTimer = dashDuration;
     }
 
 }
