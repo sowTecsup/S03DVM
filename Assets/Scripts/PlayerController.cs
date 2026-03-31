@@ -11,7 +11,7 @@ public class PlayerController : MonoBehaviour
     public float moveSpeed = 5f;
     public float rotationSpeed = 200f;
     public float verticalVelocity = 0;
-
+    public float jumpForce = 10;
 
 
     [SerializeField]private Vector2 moveInput;
@@ -28,8 +28,12 @@ public class PlayerController : MonoBehaviour
         inputs.Player.Move.performed += ctx =>  moveInput = ctx.ReadValue<Vector2>();
         inputs.Player.Move.canceled += ctx => moveInput = Vector2.zero;
 
-    }
 
+        inputs.Player.Jump.performed += OnJump;
+
+        
+
+    }
     void Start()
     {
 
@@ -50,13 +54,20 @@ public class PlayerController : MonoBehaviour
 
         verticalVelocity += Physics.gravity.y * Time.deltaTime;
 
-        if(controller.isGrounded )
+        if(controller.isGrounded && verticalVelocity < 0)
             verticalVelocity = -2f;
 
 
         moveDir.y = verticalVelocity;
         print(moveDir);
         controller.Move(moveDir * Time.deltaTime);
+    }
+
+    private void OnJump(InputAction.CallbackContext context)
+    {
+        if (!controller.isGrounded) return;
+
+        verticalVelocity = jumpForce;
     }
 
 
