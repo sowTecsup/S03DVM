@@ -8,11 +8,13 @@ public class PlayerController : MonoBehaviour
     private CharacterController controller;
 
 
+
     public float moveSpeed = 5f;
     public float rotationSpeed = 200f;
     public float verticalVelocity = 0;
     public float jumpForce = 10;
 
+    public float pushForce = 4;
 
     [SerializeField]private Vector2 moveInput;
 
@@ -59,7 +61,7 @@ public class PlayerController : MonoBehaviour
 
 
         moveDir.y = verticalVelocity;
-        print(moveDir);
+        //print(moveDir);
         controller.Move(moveDir * Time.deltaTime);
     }
 
@@ -69,23 +71,20 @@ public class PlayerController : MonoBehaviour
 
         verticalVelocity = jumpForce;
     }
-
-
-
-
-
-
-
-
-
-
-
-
     public void OnSimpleMove()
     {
         transform.Rotate(Vector3.up * moveInput.x * rotationSpeed * Time.deltaTime);
         Vector3 moveDir = transform.forward * moveSpeed * moveInput.y ;
         controller.SimpleMove(moveDir);
+    }
+    private void OnControllerColliderHit(ControllerColliderHit hit)
+    {
+        print(hit.gameObject.name);
+
+        Vector3 pushDir = (hit.transform.position - transform.position).normalized;
+
+        if (hit.rigidbody != null)
+            hit.rigidbody.AddForce(pushDir * pushForce, ForceMode.Impulse);
     }
 
 }
