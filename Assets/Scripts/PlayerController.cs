@@ -10,6 +10,8 @@ public class PlayerController : MonoBehaviour
 
     public float moveSpeed = 5f;
     public float rotationSpeed = 200f;
+    public float verticalVelocity = 0;
+
 
 
     [SerializeField]private Vector2 moveInput;
@@ -37,15 +39,37 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
 
-        // OnMove();
-        OnSimpleMove();
+         OnMove();
+        //OnSimpleMove();
     }
+
     public void OnMove()
     {
         transform.Rotate(Vector3.up * moveInput.x * rotationSpeed * Time.deltaTime);
-        Vector3 moveDir = transform.forward * moveSpeed * moveInput.y * Time.deltaTime;
-        controller.Move(moveDir);
+        Vector3 moveDir = transform.forward * moveSpeed * moveInput.y;
+
+        verticalVelocity += Physics.gravity.y * Time.deltaTime;
+
+        if(controller.isGrounded )
+            verticalVelocity = -2f;
+
+
+        moveDir.y = verticalVelocity;
+        print(moveDir);
+        controller.Move(moveDir * Time.deltaTime);
     }
+
+
+
+
+
+
+
+
+
+
+
+
     public void OnSimpleMove()
     {
         transform.Rotate(Vector3.up * moveInput.x * rotationSpeed * Time.deltaTime);
